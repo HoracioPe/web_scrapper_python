@@ -1,5 +1,9 @@
 news_sites:
   eluniversal:
     url: http://www.eluniversal.com.mx
+    queries: 
+      homepage_article_links: '.ce2-Tipo1_Titulo a'
   elpais:
     url: https://elpais.com
+    queries: 
+      homepage_article_links: '.headline a'
