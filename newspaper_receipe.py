@@ -23,6 +23,10 @@ def main(filename):
     df =_generate_uids_for_rows(df)
     df =_remove_news_lines_from_body(df)
     df= _count_words_in_body_and_title(df)
+    #___________________Para remover datos repetidos
+    df = _remove_duplicate_entries(df, 'title')
+    df = _drop_rows_with_missing_values(df)
+    _save_data(df, filename) #Guarda mi codigo
     
 
 
@@ -105,6 +109,27 @@ def tokenize_column(df, column_name):
             .apply(lambda word_list: list(filter(lambda word: word not in stop_words, word_list)))
             .apply(lambda valid_word_list: len(valid_word_list))
            )
+           
+           #Función para eliminar las entradas duplicadas
+           
+def _remove_duplicate_entries(df, column_name):
+    logger.info('Removing duplicate entries')
+    df.drop_duplicates(subset=[column_name], keep='first', inplace=True)
+
+    return df        
+    #Función para eliminar filas con valores repetidos o que no tienen valores
+def _drop_rows_with_missing_values(df):
+    logger.info('Dropping rows with missing values')
+    return df.dropna()
+    
+    #Función para guardar a disco todo el datashet
+
+def _save_data(df, filename):
+    clean_filename = 'clean_{}'.format(filename)
+    #clean_filename = f'clean_{ filename }'
+    logger.info(f'Saving data at location: { clean_filename }')
+    df.to_csv(clean_filename)
+
 
 
 if __name__ == '__main__':
