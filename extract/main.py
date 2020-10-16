@@ -4,18 +4,17 @@ import datetime
 import logging
 logging.basicConfig(level=logging.INFO)
 import re
-#is_well_formed_link=re.compile(r'^https?://.+/.$)
-#is_root_path= re.compile(r'^/.+$')
-from requests.exceptions import HTTPError
-from urllib3.exceptions import MaxRetryError
+
+from requests.exceptions import HTTPError, ContentDecodingError
+from urllib3.exceptions import MaxRetryError, DecodeError
 
 import news_page_objects as news
 from common import config
 
 logger = logging.getLogger(__name__)
 
-is_well_formed_link = re.compile(r'^https?://.+/.+$') 
-is_root_path = re.compile(r'^/.+$')    
+is_well_formed_link = re.compile(r'^https?://.+/.+$') # https://example.com/hello
+is_root_path = re.compile(r'^/.+$')     # /hello
 
 def _news_scraper(news_site_uid):
     host = config()['news_sites'][news_site_uid]['url']
@@ -34,6 +33,8 @@ def _news_scraper(news_site_uid):
             #print(article.title)
 
     #print(len(articles))
+    _save_articles(news_site_uid, articles)
+
 def _save_articles(news_site_uid, articles):
     now = datetime.datetime.now().strftime('%Y_%m_%d')
     out_file_name = f'{news_site_uid}_{now}_articles.csv'
@@ -55,7 +56,7 @@ def _fetch_article(news_site_uid, host, link):
 
     try:
         article = news.ArticlePage(news_site_uid, _build_link(host, link))
-    except (HTTPError, MaxRetryError) as e:
+    except (HTTPError, MaxRetryError, DecodeError, ContentDecodingError) as e:
         logger.warning('Error while fetching the article', exc_info=False)
 
     if article and not article.body:

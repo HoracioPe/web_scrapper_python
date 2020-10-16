@@ -3,25 +3,25 @@ import requests
 
 from common import config
 
-
+#Se de clara una clase General con la lógica principal
 class NewsPage:
 
+    #Método constructor que será reutilizado en subclases
     def __init__(self, news_site_uid, url):
         self._config = config()['news_sites'][news_site_uid]
         self._queries = self._config['queries']
         self._html = None
-        self.url =url
+        self.url = url
         self._visit(url)
 
+    #Método _select que será reutilizado en suclases
     def _select(self, query_string):
         return self._html.select(query_string)
 
-
+    #Método _visit que será reutilizado en suclases
     def _visit(self, url):
         response = requests.get(url)
-
         response.raise_for_status()
-
         self._html = bs4.BeautifulSoup(response.text, 'html.parser')
 
 class HomePage(NewsPage):

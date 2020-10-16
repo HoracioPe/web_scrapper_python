@@ -4,7 +4,6 @@ import hashlib
 import nltk
 from nltk.corpus import stopwords
 
-
 logging.basicConfig(level=logging.INFO)
 from urllib.parse import urlparse
 
@@ -15,50 +14,48 @@ logger = logging.getLogger(__name__)
 def main(filename):
     logger.info('Starting cleaning process')
 
-    df= _read_data(filename)
+    df = _read_data(filename)
     newspaper_uid = _extract_newspaper_uid(filename)
-    df =_add_newspaper_uid_column(df, newspaper_uid)
-    df =_extract_host(df)
-    df =_fill_missing_titles(df)
-    df =_generate_uids_for_rows(df)
-    df =_remove_news_lines_from_body(df)
-    df= _count_words_in_body_and_title(df)
-    #___________________Para remover datos repetidos
+    df = _add_newspaper_uid_column(df, newspaper_uid)
+    df = _extract_host(df)
+    df = _fill_missing_titles(df)
+    df = _generate_uids_for_rows(df)
+    df = _remove_news_lines_from_body(df)
+    df = _count_words_in_body_and_title(df)
     df = _remove_duplicate_entries(df, 'title')
     df = _drop_rows_with_missing_values(df)
-    _save_data(df, filename) #Guarda mi codigo
-    
 
+    #Guardar archivo
+    _save_data(df, filename)
 
     return df
 
 def _read_data(filename):
-    logger.info('Reading file {}'.format(filename))
-
+    logger.info(f'Reading file {filename}')
     return pd.read_csv(filename)
 
 def _extract_newspaper_uid(filename):
     logger.info('Extracting newspaper uid')
-    newspaper_uid=filename.split('_')[0]
+    newspaper_uid = filename.split('_')[0]
 
-    logger.info('Newspaper uid detected:{}'.format(newspaper_uid))
+    logger.info(f'Newspaper uid detected {newspaper_uid}')
     return newspaper_uid
 
 def _add_newspaper_uid_column(df, newspaper_uid):
-    logger.info('Filling newspaper_uid column with {}'.format(newspaper_uid))
-    df['newspaper_uid']= newspaper_uid
+    logger.info(f'Fillings newspaper_uid column with {newspaper_uid}')
+    df['newspaper_uid'] = newspaper_uid
 
     return df
 
 def _extract_host(df):
-    logger.info('Extracting host from urls')
-    df['host']= df['url'].apply(lambda url: urlparse(url).netloc)
+    logger.info('Extracting host rom urls')
+    df['host'] = df['url'].apply(lambda url: urlparse(url).netloc)
 
     return df
 
-
 def _fill_missing_titles(df):
     logger.info('Filling missing titles')
+
     missing_titles_mask = df['title'].isna()
 
     missing_titles = (df[missing_titles_mask]['url']
@@ -109,30 +106,26 @@ def tokenize_column(df, column_name):
             .apply(lambda word_list: list(filter(lambda word: word not in stop_words, word_list)))
             .apply(lambda valid_word_list: len(valid_word_list))
            )
-           
-           #Función para eliminar las entradas duplicadas
-           
+
 def _remove_duplicate_entries(df, column_name):
     logger.info('Removing duplicate entries')
+
     df.drop_duplicates(subset=[column_name], keep='first', inplace=True)
 
-    return df        
-    #Función para eliminar filas con valores repetidos o que no tienen valores
+    return df
+
 def _drop_rows_with_missing_values(df):
     logger.info('Dropping rows with missing values')
+
     return df.dropna()
-    
-    #Función para guardar a disco todo el datashet
 
 def _save_data(df, filename):
-    clean_filename = 'clean_{}'.format(filename)
-    #clean_filename = f'clean_{ filename }'
+    clean_filename = f'clean_{ filename }'
     logger.info(f'Saving data at location: { clean_filename }')
     df.to_csv(clean_filename)
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('filename',
                         help='The path to the dirty data',
@@ -141,4 +134,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     df = main(args.filename)
+
     print(df)
